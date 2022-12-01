@@ -68,20 +68,36 @@ func action_before(c *cli.Context) error {
 	var err error
 	path := getDBPath()
 
+	args := c.Args().Slice()
+
+	for arg := range args {
+		if args[arg] == "init" {
+			return nil
+		}
+	}
+
 	if path == "" {
 		fmt.Println()
 		ct.ChangeColor(ct.Red, false, ct.None, false)
 		fmt.Println("Error")
 		fmt.Println("-----")
 		ct.ResetColor()
-		fmt.Println("A store for your todos is missing. You have 2 possibilities:")
-		fmt.Println("  1. create a \".todos\" file in your local folder.")
-		fmt.Println("  2. the environment variable \"TODO_DB_PATH\" could be set.")
-		fmt.Println("    (example: \"export TODO_DB_PATH=$HOME/Dropbox/todo.json\" in your .bashrc or .bash_profile)")
-		fmt.Println()
+
+		errormessage := "A file for your todos is missing!\n" +
+			"If you see this message, then the program has attempted to create\n" +
+			"a file in the current directory named .todos. If this is not what\n" +
+			"you intended, then set the environment variable, TODO_DB_PATH, to\n" +
+			"the directory you would like to hold the file."
+
+		fmt.Println(errormessage)
 	}
 
-	createStoreFileIfNeeded(path)
+	path, err = os.Getwd()
+	if err != nil {
+		fmt.Println("There was an error making the .todos file!")
+	} else {
+		err = createStoreFileIfNeeded(path + "/.todos")
+	}
 
 	return err
 }
